@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000/ 16000, new BufferSlice.ISliceOutput() {
             @Override
             public void onOutput(short[] slice, int stamp) {
+                //bufferSlice内部的切片缓存(slice)是复用的，所以需要拷贝出来防止覆盖
                 short[] slice_copy = new short[slice.length];
                 System.arraycopy(slice,0,slice_copy,0,slice.length);
 
