@@ -70,14 +70,17 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         bufferSlice.input(audioData, audioData.length, 0, 0, new BufferSlice.ISliceOutput() {
             @Override
             public void onOutput(short[] slice, int stamp) {
-                final boolean vad_status = vad.process(16000,slice,false);
+                short[] slice_copy = new short[slice.length];
+                System.arraycopy(slice,0,slice_copy,0,slice.length);
+
+                pcmDataArr.add(slice_copy);
+                final boolean vad_status = vad.process(16000,slice_copy,false);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         lb_vad_status.setText(vad_status ? "有声":"无声");
                     }
                 });
-                pcmDataArr.add(slice);
             }
         });
 
