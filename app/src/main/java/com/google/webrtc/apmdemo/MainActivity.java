@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
 
     @Override
     public void onAudioCaptured(short[] audioData, int stamp) {
-        bufferSlice.input(audioData, audioData.length, 0, 0, new BufferSlice.ISliceOutput() {
+        bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000/ 16000, new BufferSlice.ISliceOutput() {
             @Override
             public void onOutput(short[] slice, int stamp) {
                 short[] slice_copy = new short[slice.length];
