@@ -7,7 +7,7 @@ package com.google.webrtc.apm;
  *Version:1.0.0   
 */
 
-public class WebrtcJni {
+public class WebRtcJni {
     static {
         System.loadLibrary("webrtc_apm");
     }
