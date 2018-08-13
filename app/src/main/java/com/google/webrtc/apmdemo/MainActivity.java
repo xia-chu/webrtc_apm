@@ -1,5 +1,6 @@
 package com.google.webrtc.apmdemo;
 
+import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,11 +11,17 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.webrtc.apm.Faac;
 import com.google.webrtc.apm.Ticker;
 import com.google.webrtc.apm.WebRtcJni.WebRtcVad;
 import com.google.webrtc.apm.WebRtcJni.WebRtcNs;
 import com.google.webrtc.apm.WebRtcJni.WebRtcAecm;
 import com.google.webrtc.apm.WebRtcJni.WebRtcAgc;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.xml.datatype.Duration;
@@ -41,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     final static int PCM_SLICE_MS = 10;
     BufferSlice bufferSlice = new BufferSlice(16000 * PCM_SLICE_MS / 1000);
     boolean interrupted = false;
+    Faac faac = new Faac(16000,1);
+    FileOutputStream file;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         bt_ns = findViewById(R.id.bt_ns);
         bt_origin = findViewById(R.id.bt_origin);
         agc.setConfig(3,30,true);
+
     }
 
     public void onClick_record(View view) {
@@ -62,14 +72,32 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             pcmDataArr.clear();
             bufferSlice.clear();
             audioCapturer.setOnAudioCapturedListener(this);
+            try {
+                file =  new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "1.aac");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
             audioCapturer.startCapture();
         }else {
             audioCapturer.stopCapture();
+            try {
+                file.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-
     @Override
     public void onAudioCaptured(short[] audioData, int stamp) {
+        byte [] aac = faac.encode(audioData);
+        if(aac != null){
+            try {
+                file.write(aac);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000/ 16000, new BufferSlice.ISliceOutput() {
             @Override
             public void onOutput(short[] slice, int stamp) {

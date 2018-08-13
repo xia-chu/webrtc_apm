@@ -23,7 +23,7 @@ public class Faac {
             ctx = 0;
         }
     }
-    public short[] encode(short[] data) {
+    public byte[] encode(short[] data) {
         return aac_encoder_input(ctx,data);
     }
 
@@ -31,6 +31,6 @@ public class Faac {
 
     private static native long aac_encoder_create(int sample_rate,int channle);
     private static native void aac_encoder_destory(long ctx);
-    private static native short[]  aac_encoder_input(long ctx, short[] data);
+    private static native byte[]  aac_encoder_input(long ctx, short[] data);
 
 }

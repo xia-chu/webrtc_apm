@@ -35,7 +35,7 @@ JNI_API(void ,aac_1encoder_1destory,jlong ctx){
     delete ((AACEncoder *)ctx);
 }
 
-JNI_API(jshortArray ,aac_1encoder_1input,
+JNI_API(jbyteArray ,aac_1encoder_1input,
         jlong ctx,
         jshortArray in_arr){
     jshort *in_ptr = env->GetShortArrayElements(in_arr,0);
@@ -48,8 +48,8 @@ JNI_API(jshortArray ,aac_1encoder_1input,
         return nullptr;
     }
     env->ReleaseShortArrayElements(in_arr,in_ptr,0);
-    auto out_arr = env->NewShortArray(out_len/2);
-    env->SetShortArrayRegion(out_arr,0,out_len/2,(short *)out_ptr);
+    auto out_arr = env->NewByteArray(out_len);
+    env->SetByteArrayRegion(out_arr,0,out_len,(jbyte *)out_ptr);
     return out_arr;
 }
 

@@ -4,13 +4,13 @@ LOCAL_MODULE    := webrtc_apm
 LOCAL_CFLAGS = -DWEBRTC_ANDROID -DWEBRTC_POSIX=1 -DWEBRTC_HAS_NEON
 LOCAL_LDLIBS    := -lm -llog
 
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+# 采用NEON优化技术
+LOCAL_ARM_NEON := true
 LOCAL_CFLAGS += -DWEBRTC_ARCH_ARM_NEON -D__ARM_NEON
 LOCAL_CFLAGS += -mfloat-abi=softfp -mfpu=neon
 TARGET_ARCH_ABI :=armeabi-v7a
 LOCAL_ARM_MODE := arm
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-# 采用NEON优化技术
-LOCAL_ARM_NEON := true
 endif
 
 
