@@ -1,12 +1,5 @@
 package com.google.webrtc.apm;
 
-/**
- *Description:
- *Author:luowei@jimi360.cn
- *Created:2018/2/7 13:57
- *Version:1.0.0   
-*/
-
 public class WebRtcJni {
     static {
         System.loadLibrary("webrtc_apm");
