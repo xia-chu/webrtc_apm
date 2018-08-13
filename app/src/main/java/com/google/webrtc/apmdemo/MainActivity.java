@@ -108,11 +108,20 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         });
     }
 
+    int micLevelIn = 0;
     public void onClick_agcPlay(View view) {
         playAudio(new IBerforePlayAudio() {
             @Override
             public short[] onBerforePlayAudio(short[] pcm) {
                 WebRtcAgc.ResultOfProcess ret = agc.process(pcm,pcm.length,100,0);
+                if (ret.ret != 0){
+                    Log.e("TAG","agc.process faield!");
+                    return pcm;
+                }
+                if (ret.saturationWarning == 1){
+                    Log.e("TAG","agc.process saturationWarning == 1");
+                }
+                micLevelIn = ret.outMicLevel;
                 return ret.out;
             }
         });
@@ -127,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
                 setEnable(false);
                 audioPlayer.startPlayer();
                 interrupted = false;
+                micLevelIn = 0;
                 for (short[] pcm : pcmDataArr){
                     short[] pcm_after = cb.onBerforePlayAudio(pcm);
                     if(pcm_after != null){

@@ -450,8 +450,8 @@ public class WebRtcJni {
 
         /**
          * 配置AGC
-         * @param targetLevelDbfs default 3 (-3 dBOv)
-         * @param compressionGaindB default 9 dB
+         * @param targetLevelDbfs default 3 (-3 dBOv), dbfs表示相对于full scale的下降值，0表示full scale，越小声音越大
+         * @param compressionGaindB default 9 dB,在Fixed模式下，越大声音越大
          * @param limiterEnable default true (on)
          * @return
          */
