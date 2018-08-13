@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
 
     Switch sw_record;
     TextView lb_vad_status;
-    Button bt_origin,bt_ns,bt_agc;
+    Button bt_origin,bt_ns,bt_agc,bt_ns_agc,bt_agc_ns;
 
     AudioCapturer audioCapturer = new AudioCapturer();
     AudioPlayer audioPlayer = new AudioPlayer();
@@ -49,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         sw_record = findViewById(R.id.sw_record);
         lb_vad_status = findViewById(R.id.lb_vad_status);
         bt_agc = findViewById(R.id.bt_agc);
+        bt_agc_ns = findViewById(R.id.bt_agc_ns);
+        bt_ns_agc = findViewById(R.id.bt_ns_agc);
+
         bt_ns = findViewById(R.id.bt_ns);
         bt_origin = findViewById(R.id.bt_origin);
 
@@ -113,6 +116,42 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         playAudio(new IBerforePlayAudio() {
             @Override
             public short[] onBerforePlayAudio(short[] pcm) {
+                WebRtcAgc.ResultOfProcess ret = agc.process(pcm,pcm.length,micLevelIn,0);
+                if (ret.ret != 0){
+                    Log.e("TAG","agc.process faield!");
+                    return pcm;
+                }
+                if (ret.saturationWarning == 1){
+                    Log.e("TAG","agc.process saturationWarning == 1");
+                }
+                micLevelIn = ret.outMicLevel;
+                return ret.out;
+            }
+        });
+    }
+
+    public void onClick_agcNSPlay(View view) {
+        playAudio(new IBerforePlayAudio() {
+            @Override
+            public short[] onBerforePlayAudio(short[] pcm) {
+                WebRtcAgc.ResultOfProcess ret = agc.process(pcm,pcm.length,micLevelIn,0);
+                if (ret.ret != 0){
+                    Log.e("TAG","agc.process faield!");
+                    return pcm;
+                }
+                if (ret.saturationWarning == 1){
+                    Log.e("TAG","agc.process saturationWarning == 1");
+                }
+                micLevelIn = ret.outMicLevel;
+                return ns.process(ret.out,PCM_SLICE_MS);
+            }
+        });
+    }
+
+    public void onClick_nsAgcPlay(View view) {
+        playAudio(new IBerforePlayAudio() {
+            @Override
+            public short[] onBerforePlayAudio(short[] pcm) {
                 pcm = ns.process(pcm,PCM_SLICE_MS);
                 WebRtcAgc.ResultOfProcess ret = agc.process(pcm,pcm.length,micLevelIn,0);
                 if (ret.ret != 0){
@@ -127,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             }
         });
     }
+
 
     private void playAudio(final IBerforePlayAudio cb){
         sw_record.setChecked(false);
@@ -153,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         });
     }
 
+
     private interface IBerforePlayAudio
     {
        short[] onBerforePlayAudio(short[] pcm);
@@ -163,6 +204,8 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             @Override
             public void run() {
                 bt_agc.setEnabled(enable);
+                bt_agc_ns.setEnabled(enable);
+                bt_ns_agc.setEnabled(enable);
                 bt_ns.setEnabled(enable);
                 bt_origin.setEnabled(enable);
                 sw_record.setEnabled(enable);

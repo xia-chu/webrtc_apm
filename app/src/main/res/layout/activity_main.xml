@@ -52,6 +52,7 @@
         app:layout_constraintStart_toEndOf="@+id/bt_ns"
         android:onClick="onClick_agcPlay"/>
 
+
     <TextView
         android:id="@+id/lb_vad"
         android:layout_width="wrap_content"
@@ -71,4 +72,28 @@
         android:text="静音"
         app:layout_constraintBaseline_toBaselineOf="@+id/lb_vad"
         app:layout_constraintStart_toEndOf="@+id/lb_vad" />
+
+    <Button
+        android:id="@+id/bt_agc_ns"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="增益消噪播放"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bt_origin"
+        android:onClick="onClick_agcNSPlay"/>
+
+    <Button
+        android:id="@+id/bt_ns_agc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="消噪增益播放"
+        app:layout_constraintStart_toEndOf="@+id/bt_agc_ns"
+        app:layout_constraintTop_toBottomOf="@+id/bt_ns"
+        android:onClick="onClick_nsAgcPlay"/>
 </android.support.constraint.ConstraintLayout>
