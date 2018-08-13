@@ -269,7 +269,7 @@ public class WebRtcJni {
          * 输入录制到的数据，开始消除回声
          * @param nearendNoisy 近端数据(也就是MIC录制到的数据)
          * @param nearendClean 近端去除噪音后的数据，可以为null
-         * @param nrOfSamples 进度数据采样数，16bit单声道采样数等于nearendNoisy.length
+         * @param nrOfSamples 进度数据采样数，16bit单声道采样数等于nearendNoisy.length,必须为80或160个采样
          * @param msInSndCardBuf 系统延时,等于采集延时+播放延时+播放列队缓存数据长度
          * @return null:出现错误，否则为消回声后的数据
          */

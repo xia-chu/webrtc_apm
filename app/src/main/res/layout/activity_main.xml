@@ -96,4 +96,16 @@
         app:layout_constraintStart_toEndOf="@+id/bt_agc_ns"
         app:layout_constraintTop_toBottomOf="@+id/bt_ns"
         android:onClick="onClick_nsAgcPlay"/>
+
+    <Button
+        android:id="@+id/bt_rec_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="边录边放"
+        app:layout_constraintStart_toEndOf="@+id/bt_ns_agc"
+        app:layout_constraintTop_toBottomOf="@+id/bt_agc"
+        android:onClick="onClick_rec_play"/>
 </android.support.constraint.ConstraintLayout>

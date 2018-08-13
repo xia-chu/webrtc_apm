@@ -34,6 +34,7 @@ public class AudioPlayer {
         return startPlayer(DEFAULT_STREAM_TYPE, DEFAULT_SAMPLE_RATE, DEFAULT_CHANNEL_CONFIG, DEFAULT_AUDIO_FORMAT);
     }
 
+    private int playDelayMs = 0;
     public boolean startPlayer(int streamType, int sampleRateInHz, int channelConfig, int audioFormat) {
         if(mAudioTrack != null){
             return true;
@@ -43,9 +44,16 @@ public class AudioPlayer {
             Log.e(TAG, "Invalid parameter !");
             return false;
         }
+        int bytesPerSecond = (sampleRateInHz * (audioFormat == AudioFormat.ENCODING_PCM_8BIT ? 1 : 2) * (channelConfig == AudioFormat.CHANNEL_IN_MONO ? 1 : 2) );
+        playDelayMs =  bufferSizeInBytes * 1000/ bytesPerSecond;
         mAudioTrack = new AudioTrack(streamType, sampleRateInHz, channelConfig, audioFormat, bufferSizeInBytes, DEFAULT_PLAY_MODE);
         return true;
     }
+
+    public int getPlayDelayMS(){
+        return playDelayMs;
+    }
+
 
     /**
      * 停止播放

@@ -92,7 +92,7 @@ public class AudioCapturer {
         @Override
         public void run() {
             while (mIsCaptureStarted) {
-                short[] audioCapture = new short[mMiniBufferSize];
+                short[] audioCapture = new short[mMiniBufferSize/2];
                 int ret = mAudioRecord.read(audioCapture, 0, audioCapture.length);
                 if(ret > 0){
                     if(mOnAudioEncodedListener != null){

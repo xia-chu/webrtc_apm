@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     TaskQuenu taskQuenu = new TaskQuenu();
 
     //每个切片20ms的pcm数据
-    final static int PCM_SLICE_MS = 20;
+    final static int PCM_SLICE_MS = 10;
     BufferSlice bufferSlice = new BufferSlice(16000 * PCM_SLICE_MS / 1000);
     boolean interrupted = false;
 
@@ -54,9 +54,6 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
 
         bt_ns = findViewById(R.id.bt_ns);
         bt_origin = findViewById(R.id.bt_origin);
-
-        audioCapturer.setOnAudioCapturedListener(this);
-
         agc.setConfig(3,30,true);
     }
 
@@ -64,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         if (sw_record.isChecked()){
             pcmDataArr.clear();
             bufferSlice.clear();
+            audioCapturer.setOnAudioCapturedListener(this);
             audioCapturer.startCapture();
         }else {
             audioCapturer.stopCapture();
@@ -167,6 +165,38 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         });
     }
 
+    public void onClick_rec_play(View view) {
+        setEnable(false);
+        audioCapturer.setOnAudioCapturedListener(new AudioCapturer.OnAudioCapturedListener() {
+            @Override
+            public void onAudioCaptured(short[] audioData, int stamp) {
+                bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000 / 16000, new BufferSlice.ISliceOutput() {
+                    @Override
+                    public void onOutput(short[] slice, int stamp) {
+                        final short [] nearendNoisy = new short[slice.length];
+                        System.arraycopy(slice,0,nearendNoisy,0,slice.length);
+
+                        taskQuenu.async(new TaskQuenu.Task() {
+                            @Override
+                            public void run() throws TaskQuenu.ExitInterruptedException {
+                                short[] nearendClean = ns.process(nearendNoisy,PCM_SLICE_MS);
+                                short[] aecm_out = aecm.process(nearendNoisy,nearendClean,nearendNoisy.length, audioCapturer.getRecordDelayMS() + audioPlayer.getPlayDelayMS());
+                                if(aecm_out == null){
+                                    aecm_out = nearendClean;
+                                    Log.e("TAG","aecm.process return null");
+                                }
+                                aecm.bufferFarend(aecm_out,aecm_out.length);
+                                audioPlayer.play(aecm_out,0,aecm_out.length);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        audioCapturer.startCapture();
+        audioPlayer.startPlayer();
+    }
+
 
     private void playAudio(final IBerforePlayAudio cb){
         sw_record.setChecked(false);
@@ -192,6 +222,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             }
         });
     }
+
 
 
     private interface IBerforePlayAudio
