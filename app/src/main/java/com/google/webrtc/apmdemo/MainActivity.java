@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
 
         audioCapturer.setOnAudioCapturedListener(this);
 
-        agc.setConfig(3,20,true);
+        agc.setConfig(3,30,true);
     }
 
     public void onClick_record(View view) {
@@ -113,7 +113,8 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         playAudio(new IBerforePlayAudio() {
             @Override
             public short[] onBerforePlayAudio(short[] pcm) {
-                WebRtcAgc.ResultOfProcess ret = agc.process(pcm,pcm.length,100,0);
+                pcm = ns.process(pcm,PCM_SLICE_MS);
+                WebRtcAgc.ResultOfProcess ret = agc.process(pcm,pcm.length,micLevelIn,0);
                 if (ret.ret != 0){
                     Log.e("TAG","agc.process faield!");
                     return pcm;
