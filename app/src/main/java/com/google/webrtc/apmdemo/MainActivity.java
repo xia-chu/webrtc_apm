@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     WebRtcVad vad = new WebRtcVad(2);
     WebRtcNs ns = new WebRtcNs(16000,1);
     WebRtcAecm aecm = new WebRtcAecm(16000,false,3);
-    WebRtcAgc agc = new WebRtcAgc(0,255,2,16000);
+    WebRtcAgc agc = new WebRtcAgc(0,255,3,16000);
 
     Handler handler = new Handler();
     ArrayList<short[]> pcmDataArr = new ArrayList<>();
@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         bt_origin = findViewById(R.id.bt_origin);
 
         audioCapturer.setOnAudioCapturedListener(this);
+
+        agc.setConfig(3,20,true);
     }
 
     public void onClick_record(View view) {
