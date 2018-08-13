@@ -17,8 +17,8 @@ extern "C" {
 
 #include "ijksoundtouch_wrap.h"
 
-#define JNI_API(retType, funName, ...) extern "C"  JNIEXPORT retType Java_com_google_webrtc_apm_WebrtcJni_##funName(JNIEnv* env, jclass cls,__VA_ARGS__)
-#define JNI_API1(retType, funName) extern "C"  JNIEXPORT retType Java_com_google_webrtc_apm_WebrtcJni_##funName(JNIEnv* env, jclass cls)
+#define JNI_API(retType, funName, ...) extern "C"  JNIEXPORT retType Java_com_google_webrtc_apm_SoundTouchJni_##funName(JNIEnv* env, jclass cls,__VA_ARGS__)
+#define JNI_API1(retType, funName) extern "C"  JNIEXPORT retType Java_com_google_webrtc_apm_SoundTouchJni_##funName(JNIEnv* env, jclass cls)
 
 
 JNI_API1(jlong,ijk_1soundtouch_1create){
