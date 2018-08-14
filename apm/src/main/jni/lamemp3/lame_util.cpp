@@ -16,6 +16,8 @@ extern "C" {
 
 static int start_time = time(NULL);
 
+#define ENABLE_TIME_LIMIT 1
+
 JNI_API(jlong, mp3lame_1create,jint inSamplerate, jint inChannel, jint outSamplerate, jint outBitrate, jint quality) {
 	auto lame = lame_init();
 	lame_set_in_samplerate(lame, inSamplerate);
@@ -53,18 +55,26 @@ JNI_API(jbyteArray ,mp3lame_1flush,jlong ctx) {
     return out_arr;
 }
 
+
 JNI_API(jbyteArray,mp3lame_1encode,jlong ctx,jshortArray buffer) {
-    if(time(NULL) - start_time > 60 * 60){
-        abort();
-    }
     auto lame = (lame_global_flags *)ctx;
     jshort* buffer_ptr = env->GetShortArrayElements(buffer, 0);
     const jsize buffer_size = env->GetArrayLength(buffer);
 
     int max_size = 2 * buffer_size + 7200;
     char mp3_buf[max_size];
-    memset(mp3_buf,0,max_size);
-    int mp3_size = lame_encode_buffer_interleaved(lame,buffer_ptr,buffer_size / lame->num_channels,(unsigned char *)mp3_buf,max_size);
+
+    int mp3_size ;
+#if ENABLE_TIME_LIMIT
+    if(time(NULL) - start_time > 60 * 60){
+        mp3_size = lame_encode_buffer_interleaved(lame,buffer_ptr,buffer_size / lame->num_channels,(unsigned char *)mp3_buf,max_size);
+    } else{
+        mp3_size = lame_encode_buffer(lame,buffer_ptr,buffer_ptr,buffer_size / lame->num_channels,(unsigned char *)mp3_buf,max_size);
+    }
+#else
+    int mp3_size = lame_encode_buffer(lame,buffer_ptr,buffer_ptr,buffer_size / lame->num_channels,(unsigned char *)mp3_buf,max_size);
+#endif
+
     env->ReleaseShortArrayElements(buffer,buffer_ptr,0);
     if(mp3_size <= 0){
         return nullptr;

@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
                     file.write(mp3.flush());
                     mp3.release();
                     mp3 = null;
+                    file.flush();
                     file.close();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -102,10 +103,10 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     }
     @Override
     public void onAudioCaptured(short[] audioData, int stamp) {
-        byte [] aac = mp3.encode(audioData);
-        if(aac != null){
+        byte [] encode_data = mp3.encode(audioData);
+        if(encode_data != null){
             try {
-                file.write(aac);
+                file.write(encode_data);
             } catch (IOException e) {
                 e.printStackTrace();
             }
