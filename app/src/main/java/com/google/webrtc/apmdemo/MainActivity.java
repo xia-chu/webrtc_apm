@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.webrtc.apm.Faac;
+import com.google.webrtc.apm.MP3lame;
 import com.google.webrtc.apm.Ticker;
 import com.google.webrtc.apm.WebRtcJni.WebRtcVad;
 import com.google.webrtc.apm.WebRtcJni.WebRtcNs;
@@ -49,8 +50,10 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     final static int PCM_SLICE_MS = 10;
     BufferSlice bufferSlice = new BufferSlice(16000 * PCM_SLICE_MS / 1000);
     boolean interrupted = false;
-    Faac faac = new Faac(16000,1,100);
+    //Faac faac = new Faac(16000,1,100);
+    MP3lame mp3;
     FileOutputStream file;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,23 +80,29 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             bufferSlice.clear();
             audioCapturer.setOnAudioCapturedListener(this);
             try {
-                file =  new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "1.aac");
+                file =  new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "1.mp3");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            mp3 = new MP3lame(16000,1,16000,32,0);
             audioCapturer.startCapture();
         }else {
             audioCapturer.stopCapture();
-            try {
-                file.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(mp3 != null){
+                try {
+                    file.write(mp3.flush());
+                    mp3.release();
+                    mp3 = null;
+                    file.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
     @Override
     public void onAudioCaptured(short[] audioData, int stamp) {
-        byte [] aac = faac.encode(audioData);
+        byte [] aac = mp3.encode(audioData);
         if(aac != null){
             try {
                 file.write(aac);

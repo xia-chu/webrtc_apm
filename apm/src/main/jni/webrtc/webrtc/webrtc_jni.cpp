@@ -273,7 +273,7 @@ JNI_API(jint ,WebRtcAgc_1Process,
 
 JNI_API(jint ,WebRtcAgc_1set_1config,jlong ctx,jint targetLevelDbfs,jint compressionGaindB,jint limiterEnable){
     void *handle = (void *)ctx;
-    WebRtcAgc_config_t config = {targetLevelDbfs,compressionGaindB,limiterEnable};
+    WebRtcAgc_config_t config = {(int16_t)targetLevelDbfs,(int16_t)compressionGaindB,(uint8_t)limiterEnable};
     return WebRtcAgc_set_config(handle,config);
 }
 
