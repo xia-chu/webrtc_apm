@@ -22,9 +22,9 @@ extern "C" {
 #define JNI_API1(retType, funName) extern "C"  JNIEXPORT retType Java_com_google_webrtc_apm_Faac_##funName(JNIEnv* env, jclass cls)
 
 
-JNI_API(jlong,aac_1encoder_1create,jint iSampleRate, jint iAudioChannel){
+JNI_API(jlong,aac_1encoder_1create,jint iSampleRate, jint iAudioChannel,jint quality){
     AACEncoder *encoder = new AACEncoder;
-    if(!encoder->init(iSampleRate,iAudioChannel,16)){
+    if(!encoder->init(iSampleRate,iAudioChannel,16,quality)){
         delete encoder;
         return 0;
     }

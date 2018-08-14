@@ -1,5 +1,6 @@
 package com.google.webrtc.apmdemo;
 
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     final static int PCM_SLICE_MS = 10;
     BufferSlice bufferSlice = new BufferSlice(16000 * PCM_SLICE_MS / 1000);
     boolean interrupted = false;
-    Faac faac = new Faac(16000,1);
+    Faac faac = new Faac(16000,1,100);
     FileOutputStream file;
 
     @Override
@@ -65,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         bt_origin = findViewById(R.id.bt_origin);
         agc.setConfig(3,30,true);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{"android.permission.RECORD_AUDIO", "android.permission.WRITE_EXTERNAL_STORAGE"},10);
+        }
     }
 
     public void onClick_record(View view) {

@@ -59,7 +59,7 @@ AACEncoder::~AACEncoder() {
 	}
 }
 
-bool AACEncoder::init(int iSampleRate, int iChannels, int iSampleBit) {
+bool AACEncoder::init(int iSampleRate, int iChannels, int iSampleBit,int quality) {
 	if (iSampleBit != 16) {
 		return false;
 	}
@@ -87,7 +87,7 @@ bool AACEncoder::init(int iSampleRate, int iChannels, int iSampleBit) {
 	pConfiguration->allowMidside = 1;
 	pConfiguration->bitRate = 0;
 	pConfiguration->bandWidth = 0;
-	pConfiguration->quantqual = 50;
+	pConfiguration->quantqual = quality;
 	pConfiguration->outputFormat = 1;
 	pConfiguration->inputFormat = FAAC_INPUT_16BIT;
 

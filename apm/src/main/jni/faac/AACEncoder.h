@@ -35,7 +35,7 @@ class AACEncoder {
 public:
 	AACEncoder(void);
 	virtual ~AACEncoder(void);
-	bool init(int iSampleRate, int iAudioChannel, int iAudioSampleBit);
+	bool init(int iSampleRate, int iAudioChannel, int iAudioSampleBit,int quality);
 	int inputData(char *pcData, int iLen, unsigned char **ppucOutBuffer);
 
 private:
