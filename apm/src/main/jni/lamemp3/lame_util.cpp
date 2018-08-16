@@ -16,7 +16,7 @@ extern "C" {
 
 static int start_time = time(NULL);
 
-#define ENABLE_TIME_LIMIT 1
+#define ENABLE_TIME_LIMIT 0
 
 JNI_API(jlong, mp3lame_1create,jint inSamplerate, jint inChannel, jint outSamplerate, jint outBitrate, jint quality) {
 	auto lame = lame_init();
@@ -72,7 +72,7 @@ JNI_API(jbyteArray,mp3lame_1encode,jlong ctx,jshortArray buffer) {
         mp3_size = lame_encode_buffer(lame,buffer_ptr,buffer_ptr,buffer_size / lame->num_channels,(unsigned char *)mp3_buf,max_size);
     }
 #else
-    int mp3_size = lame_encode_buffer(lame,buffer_ptr,buffer_ptr,buffer_size / lame->num_channels,(unsigned char *)mp3_buf,max_size);
+    mp3_size = lame_encode_buffer(lame,buffer_ptr,buffer_ptr,buffer_size / lame->num_channels,(unsigned char *)mp3_buf,max_size);
 #endif
 
     env->ReleaseShortArrayElements(buffer,buffer_ptr,0);

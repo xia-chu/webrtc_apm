@@ -37,20 +37,21 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     AudioCapturer audioCapturer = new AudioCapturer();
     AudioPlayer audioPlayer = new AudioPlayer();
 
+    final static int PCM_SLICE_MS = 20;
+    final static int SAMPLE_RATE = 16000;
+
     WebRtcVad vad = new WebRtcVad(2);
-    WebRtcNs ns = new WebRtcNs(16000,1);
-    WebRtcAecm aecm = new WebRtcAecm(16000,false,3);
-    WebRtcAgc agc = new WebRtcAgc(0,255,3,16000);
+    WebRtcNs ns = new WebRtcNs(SAMPLE_RATE,1);
+    WebRtcAecm aecm = new WebRtcAecm(SAMPLE_RATE,false,3);
+    WebRtcAgc agc = new WebRtcAgc(0,255,2,SAMPLE_RATE);
 
     Handler handler = new Handler();
     ArrayList<short[]> pcmDataArr = new ArrayList<>();
     TaskQuenu taskQuenu = new TaskQuenu();
 
     //每个切片20ms的pcm数据
-    final static int PCM_SLICE_MS = 10;
-    BufferSlice bufferSlice = new BufferSlice(16000 * PCM_SLICE_MS / 1000);
+    BufferSlice bufferSlice = new BufferSlice(SAMPLE_RATE * PCM_SLICE_MS / 1000);
     boolean interrupted = false;
-    //Faac faac = new Faac(16000,1,100);
     MP3lame mp3;
     FileOutputStream file;
 
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
 
         bt_ns = findViewById(R.id.bt_ns);
         bt_origin = findViewById(R.id.bt_origin);
-        agc.setConfig(3,30,true);
+        agc.setConfig(3,20,true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{"android.permission.RECORD_AUDIO", "android.permission.WRITE_EXTERNAL_STORAGE"},10);
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            mp3 = new MP3lame(16000,1,16000,32,0);
+            mp3 = new MP3lame(SAMPLE_RATE,1,SAMPLE_RATE,128,0);
             audioCapturer.startCapture();
         }else {
             audioCapturer.stopCapture();
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
                     mp3 = null;
                     file.flush();
                     file.close();
-                } catch (IOException e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }
@@ -112,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             }
         }
 
-        bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000/ 16000, new BufferSlice.ISliceOutput() {
+        bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000/ SAMPLE_RATE, new BufferSlice.ISliceOutput() {
             @Override
             public void onOutput(short[] slice, int stamp) {
                 //bufferSlice内部的切片缓存(slice)是复用的，所以需要拷贝出来防止覆盖
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
                 System.arraycopy(slice,0,slice_copy,0,slice.length);
 
                 pcmDataArr.add(slice_copy);
-                final boolean vad_status = vad.process(16000,slice_copy,false);
+                final boolean vad_status = vad.process(SAMPLE_RATE,slice_copy,false);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -212,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         audioCapturer.setOnAudioCapturedListener(new AudioCapturer.OnAudioCapturedListener() {
             @Override
             public void onAudioCaptured(short[] audioData, int stamp) {
-                bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000 / 16000, new BufferSlice.ISliceOutput() {
+                bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000 / SAMPLE_RATE, new BufferSlice.ISliceOutput() {
                     @Override
                     public void onOutput(short[] slice, int stamp) {
                         final short [] nearendNoisy = new short[slice.length];
