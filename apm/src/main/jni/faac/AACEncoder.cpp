@@ -27,6 +27,7 @@
 #ifdef ENABLE_FAAC
 
 #include <cstdlib>
+#include <cstring>
 #include "AACEncoder.h"
 
 #ifdef __cplusplus

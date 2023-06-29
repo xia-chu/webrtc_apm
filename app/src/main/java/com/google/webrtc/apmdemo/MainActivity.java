@@ -1,8 +1,13 @@
 package com.google.webrtc.apmdemo;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     final static int SAMPLE_RATE = 16000;
 
     WebRtcVad vad = new WebRtcVad(2);
-    WebRtcNs ns = new WebRtcNs(SAMPLE_RATE,1);
+    WebRtcNs ns = new WebRtcNs(SAMPLE_RATE,2);
     WebRtcAecm aecm = new WebRtcAecm(SAMPLE_RATE,false,3);
     WebRtcAgc agc = new WebRtcAgc(0,255,2,SAMPLE_RATE);
 
@@ -75,13 +80,24 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         }
     }
 
-    public void onClick_record(View view) {
+    public void onClick_record(View view)  throws Exception{
         if (sw_record.isChecked()){
             pcmDataArr.clear();
             bufferSlice.clear();
             audioCapturer.setOnAudioCapturedListener(this);
             try {
-                file =  new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "1.mp3");
+                File path=new File( this.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + File.separator , "1.mp3");
+
+                if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                    if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                        Toast.makeText(MainActivity.this,"请开启存储权限",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+
+                if(!path.exists())path.createNewFile();
+                file =  new FileOutputStream(path.getAbsolutePath());
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
