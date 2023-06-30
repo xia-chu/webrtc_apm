@@ -1,9 +1,13 @@
 package com.google.webrtc.apmdemo;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+
 import com.google.webrtc.apm.Ticker;
 
 
@@ -24,7 +28,7 @@ public class AudioCapturer {
 
     public interface OnAudioCapturedListener {
         void onAudioCaptured(short[] audioData, int stamp);
-    }	
+    }
 
 
     /**
@@ -49,13 +53,14 @@ public class AudioCapturer {
             return false;
         }
 
-        mMiniBufferSize  = AudioRecord.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
+        mMiniBufferSize = AudioRecord.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
         if (mMiniBufferSize == AudioRecord.ERROR_BAD_VALUE) {
             Log.e(TAG, "Invalid parameter !");
             return false;
         }
-        int bytesPerSecond = (sampleRateInHz * (audioFormat == AudioFormat.ENCODING_PCM_8BIT ? 1 : 2) * (channelConfig == AudioFormat.CHANNEL_IN_MONO ? 1 : 2) );
-        mRecordDelayMS = mMiniBufferSize * 1000/ bytesPerSecond;
+        int bytesPerSecond = (sampleRateInHz * (audioFormat == AudioFormat.ENCODING_PCM_8BIT ? 1 : 2) * (channelConfig == AudioFormat.CHANNEL_IN_MONO ? 1 : 2));
+        mRecordDelayMS = mMiniBufferSize * 1000 / bytesPerSecond;
+
 
         mAudioRecord = new AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, mMiniBufferSize);
 

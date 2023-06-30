@@ -1,8 +1,10 @@
 package com.google.webrtc.apmdemo;
 
 import android.Manifest;
-import android.content.Context;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
@@ -18,12 +20,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.webrtc.apm.Faac;
-import com.google.webrtc.apm.MP3lame;
 import com.google.webrtc.apm.Ticker;
 import com.google.webrtc.apm.WebRtcJni.WebRtcVad;
 import com.google.webrtc.apm.WebRtcJni.WebRtcNs;
 import com.google.webrtc.apm.WebRtcJni.WebRtcAecm;
 import com.google.webrtc.apm.WebRtcJni.WebRtcAgc;
+import com.google.webrtc.apmdemo.file.ReadAACFileThread;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,17 +33,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.xml.datatype.Duration;
-
 public class MainActivity extends AppCompatActivity implements AudioCapturer.OnAudioCapturedListener{
 
     Switch sw_record;
-    TextView lb_vad_status;
+    TextView lb_vad_status,filePathtextView;
     Button bt_origin,bt_ns,bt_agc,bt_ns_agc,bt_agc_ns;
 
     AudioCapturer audioCapturer = new AudioCapturer();
     AudioPlayer audioPlayer = new AudioPlayer();
-
+    private String path=null;
     final static int PCM_SLICE_MS = 20;
     final static int SAMPLE_RATE = 16000;
 
@@ -57,8 +57,11 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     //每个切片20ms的pcm数据
     BufferSlice bufferSlice = new BufferSlice(SAMPLE_RATE * PCM_SLICE_MS / 1000);
     boolean interrupted = false;
-    MP3lame mp3;
+    //MP3lame mp3;
+    Faac faac;
     FileOutputStream file;
+
+    ReadAACFileThread readAACFileThread;
 
 
     @Override
@@ -67,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
         setContentView(R.layout.activity_main);
         sw_record = findViewById(R.id.sw_record);
         lb_vad_status = findViewById(R.id.lb_vad_status);
+        filePathtextView = findViewById(R.id.filePathtextView);
         bt_agc = findViewById(R.id.bt_agc);
         bt_agc_ns = findViewById(R.id.bt_agc_ns);
         bt_ns_agc = findViewById(R.id.bt_ns_agc);
@@ -86,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             bufferSlice.clear();
             audioCapturer.setOnAudioCapturedListener(this);
             try {
-                File path=new File( this.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + File.separator , "1.mp3");
-
+                File path=new File( this.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() , "1.aac");
+                this.path=path.getAbsolutePath();
                 if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                     if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
@@ -101,15 +105,18 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            mp3 = new MP3lame(SAMPLE_RATE,1,SAMPLE_RATE,128,0);
+            faac = new Faac(SAMPLE_RATE,1,100);
+            //mp3 = new MP3lame(SAMPLE_RATE,1,SAMPLE_RATE,128,0);
             audioCapturer.startCapture();
         }else {
             audioCapturer.stopCapture();
-            if(mp3 != null){
+            if(faac != null){
                 try {
-                    file.write(mp3.flush());
-                    mp3.release();
-                    mp3 = null;
+                    filePathtextView.setText(path);
+
+                    //file.write(faac.encode());
+                    faac.release();
+                    faac = null;
                     file.flush();
                     file.close();
                 } catch (Throwable e) {
@@ -120,20 +127,37 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
     }
     @Override
     public void onAudioCaptured(short[] audioData, int stamp) {
-        byte [] encode_data = mp3.encode(audioData);
-        if(encode_data != null){
-            try {
-                file.write(encode_data);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+
+        //audioData = ns.process(audioData,PCM_SLICE_MS);
+//        WebRtcAgc.ResultOfProcess ret = agc.process(audioData,audioData.length,micLevelIn,0);
+//        if (ret.ret != 0){
+//            Log.e("TAG","agc.process faield!");
+//            //return pcm;
+//        }
+//        if (ret.saturationWarning == 1){
+//            Log.e("TAG","agc.process saturationWarning == 1");
+//        }
+        //micLevelIn = ret.outMicLevel;
+        //audioData= ret.out;
+
+
 
         bufferSlice.input(audioData, audioData.length, stamp, audioData.length * 1000/ SAMPLE_RATE, new BufferSlice.ISliceOutput() {
             @Override
             public void onOutput(short[] slice, int stamp) {
+               // slice = ns.process(slice,PCM_SLICE_MS);
+                byte [] encode_data = faac.encode(slice);
+                if(encode_data != null){
+                    try {
+                        file.write(encode_data);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 //bufferSlice内部的切片缓存(slice)是复用的，所以需要拷贝出来防止覆盖
                 short[] slice_copy = new short[slice.length];
+
                 System.arraycopy(slice,0,slice_copy,0,slice.length);
 
                 pcmDataArr.add(slice_copy);
@@ -186,6 +210,48 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
             }
         });
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == Activity.RESULT_OK) {
+
+
+            Uri uri = data.getData();
+
+            String pathString = UriUtil.getPath(this, uri);
+
+            filePathtextView.setText(pathString);
+            path=pathString;
+
+
+                /*
+                 //保存读取到的内容
+            StringBuilder result = new StringBuilder();
+
+                //获取输入流
+                InputStream is = this.getContentResolver().openInputStream(uri);
+                //创建用于字符输入流中读取文本的bufferReader对象
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+
+
+                String line;
+                while ((line = br.readLine()) != null) {
+                    //将读取到的内容放入结果字符串
+                    result.append(line);
+                }
+                //文件中的内容
+                String content = result.toString();
+
+
+                 */
+
+
+        }
+    }
+
+
 
     public void onClick_agcNSPlay(View view) {
         playAudio(new IBerforePlayAudio() {
@@ -222,6 +288,64 @@ public class MainActivity extends AppCompatActivity implements AudioCapturer.OnA
                 return ret.out;
             }
         });
+    }
+
+
+    public void onClick_stopnsAgcPlay1(View view){
+        readAACFileThread.setFinish(true);
+    }
+
+    public void onClick_nsAgcPlay1(View view) {
+
+        readAACFileThread = new ReadAACFileThread(path);
+        readAACFileThread.start();
+
+//        playAudio(new IBerforePlayAudio() {
+//            @Override
+//            public short[] onBerforePlayAudio(short[] pcm) {
+//                pcm = ns.process(pcm,PCM_SLICE_MS);
+//                WebRtcAgc.ResultOfProcess ret = agc.process(pcm,pcm.length,micLevelIn,0);
+//                if (ret.ret != 0){
+//                    Log.e("TAG","agc.process faield!");
+//                    return pcm;
+//                }
+//                if (ret.saturationWarning == 1){
+//                    Log.e("TAG","agc.process saturationWarning == 1");
+//                }
+//                micLevelIn = ret.outMicLevel;
+//                return ret.out;
+//            }
+//        });
+    }
+
+    public void onClick_choosefile(View view) {
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        //intent.type = "*/*"       //   /*/ 此处是任意类型任意后缀
+        intent.setType("audio/*"); //选择音频
+
+        //intent.setType(“video/*”) //选择视频 （mp4 3gp 是android支持的视频格式）
+
+        //intent.setType(“video/*;image/*”)//同时选择视频和图片
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, 100);
+//
+//        playAudio(new IBerforePlayAudio() {
+//            @Override
+//            public short[] onBerforePlayAudio(short[] pcm) {
+//                pcm = ns.process(pcm,PCM_SLICE_MS);
+//                WebRtcAgc.ResultOfProcess ret = agc.process(pcm,pcm.length,micLevelIn,0);
+//                if (ret.ret != 0){
+//                    Log.e("TAG","agc.process faield!");
+//                    return pcm;
+//                }
+//                if (ret.saturationWarning == 1){
+//                    Log.e("TAG","agc.process saturationWarning == 1");
+//                }
+//                micLevelIn = ret.outMicLevel;
+//                return ret.out;
+//            }
+//        });
     }
 
     public void onClick_rec_play(View view) {
