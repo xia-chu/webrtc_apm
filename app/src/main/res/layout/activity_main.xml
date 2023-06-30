@@ -108,4 +108,61 @@
         app:layout_constraintStart_toEndOf="@+id/bt_ns_agc"
         app:layout_constraintTop_toBottomOf="@+id/bt_agc"
         android:onClick="onClick_rec_play"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:divider="@android:drawable/alert_dark_frame"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+
+        <Button
+            android:id="@+id/onClick_choosefile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick_choosefile"
+            android:text="选择音频文件" />
+
+        <Button
+            android:id="@+id/bt_ns_agc1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick_nsAgcPlay1"
+            android:text="文件消噪增益" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick_stopnsAgcPlay1"
+            android:text="结束" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="409dp"
+        android:layout_height="72dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        tools:layout_editor_absoluteX="1dp">
+
+        <TextView
+            android:id="@+id/filePathtextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:text="选择文件然后降噪增益播放"
+        app:layout_constraintTop_toBottomOf="@+id/bt_agc_ns"
+        tools:layout_editor_absoluteX="8dp" />
+
 </android.support.constraint.ConstraintLayout>
